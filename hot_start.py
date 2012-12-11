@@ -23,7 +23,7 @@ def main():
 
     for i in range(nrows):
         for j in range(ncols):
-            num = choice([1,3])
+            num = choice([1,2,3])
             txt_f.write("%d " % num)
             out_f.write("%c" % num)
         txt_f.write('\n')
