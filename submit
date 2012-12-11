@@ -1,0 +1,14 @@
+#!/bin/bash
+#PBS -q normal
+#PBS -l nodes=1:ppn=16:native
+#PBS -l walltime=00:30:00
+#PBS -N check_hot_1024x1024
+#PBS -o Out/hot_1024x1024.out
+#PBS -e Log/hot_1024x1024.log
+#PBS -A TG-CCR120040
+#PBS -M gregory.petropoulos@colorado.edu
+#PBS -m abe
+#PBS -V
+# Start of user commands - comments start with a hash sign (#)
+cd /oasis/scratch/gregp/temp_project/cs_5576/dilute-ising
+mpirun -np 16 -hostfile $PBS_NODEFILE ./DIsing hot_1024x1024.pgm checkerboard 1 1 1000000 1000 1000

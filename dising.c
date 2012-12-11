@@ -307,9 +307,9 @@ void update (const double *p_up, const double *p_dn, const double *p_no) {
   int seed = 1;
   double ran; 
   for (i = 0; i < local_height*local_width; i++) {    /* loops through the local data           */
-    ran = ran3();
+    ran = ran3(&seed);
     x = (int)(ran*(double)local_width);
-    ran = ran3();
+    ran = ran3(&seed);
     y = (int)(ran*(double)local_height);
 
     yb = y + 1;                                       /* shifts needed becuase the board        */
@@ -320,7 +320,7 @@ void update (const double *p_up, const double *p_dn, const double *p_no) {
     neighbor += field[(yb)*field_width+xb-1];         /* left                                   */
     neighbor += field[(yb)*field_width+xb+1];         /* right                                  */
 
-    ran = ran3();
+    ran = ran3(&seed);
 
     if ((0 <= ran) && (ran < p_up[neighbor+4])) {field[yb*field_width+xb] = 1;}
     else if ((p_up[neighbor+4] <= ran) && (ran < p_dn[neighbor+4]+p_up[neighbor+4])) {field[yb*field_width+xb] = -1;}
