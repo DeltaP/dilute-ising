@@ -1,8 +1,9 @@
-CGL*
+DIsing*
 
 Out/*
 Figures/*
 Log/*
+lib/*
 
 *.dSYM
 *.aux
@@ -10,7 +11,7 @@ Log/*
 *.pgm
 *.o
 *.gif
+*.txt
 
 Clog/*
-cgl
 Saved_States
