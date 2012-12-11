@@ -1,1 +1,5 @@
 Here lies my final proeject for High Performance Computing.
+
+#command to convert my .pgm files to colors with red=spin down, white=no spin, and cyan=spin up
+
+for f in *ising_test.pgm; do convert -auto-level -clut $f table.ppm $f.png; done; convert -delay 10 -loop 0 *.pgm.png coloredAni.gif; rm *.pgm.png
