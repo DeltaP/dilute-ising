@@ -3,7 +3,7 @@
 #define MZ 0
 #define FAC (1.0/MBIG)
 
-double ran3(idum)
+float ran3(idum)
 int *idum;
 {
 	static int inext,inextp;
@@ -39,7 +39,7 @@ int *idum;
 	mj=ma[inext]-ma[inextp];
 	if (mj < MZ) mj += MBIG;
 	ma[inext]=mj;
-	return (double)mj*FAC;
+	return mj*FAC;
 }
 
 #undef MBIG

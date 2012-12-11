@@ -31,6 +31,9 @@ int ncols;
 int nrows;
 int *field;                                             /* The local data fields                  */
 char header[100];
+MPI_Datatype row;                                     /* makes row data type                    */
+MPI_Datatype col;                                     /* makes col data type                    */
+MPI_Datatype etype, filetype, contig;                 /* derrived data types for IO             */
 // -----------------------------------------------------------------
 
 
@@ -38,6 +41,8 @@ char header[100];
 // Ends the program on an error and prints message to node 0
 void cleanup (const char *message) {
   if (my_rank == 0) printf("%s\n",message);
+  MPI_Type_free(&row);
+  MPI_Type_free(&col);
   MPI_Finalize();                                       /* kills mpi                              */
   exit(0);
 }
@@ -93,7 +98,6 @@ void fileread (char *filename, char *partition, int *offset) {
   // array for the file read
   char *temp=(char *)malloc( local_width * local_height * sizeof(char));
   MPI_Aint extent;                                      /* declares the extent                    */
-  MPI_Datatype etype, filetype, contig;                 /* derrived data types for IO             */
   MPI_Offset disp = *offset;                            /* the initial displacement of            */
                                                         /*   the header                           */
   // this needs to be added to the displacement so each processor starts reading from
@@ -126,6 +130,7 @@ void fileread (char *filename, char *partition, int *offset) {
     }
   }
   MPI_File_close(&fh);
+  MPI_Type_free(&filetype);
 }
 // -----------------------------------------------------------------
 
@@ -160,7 +165,7 @@ void filewrite (char *in_file, int iteration, int offset, int total_iterations) 
   }
 
   MPI_Aint extent;                                      /* declares the extent                    */
-  MPI_Datatype etype, filetype, contig;                 /* derrived data types for IO             */
+  //MPI_Datatype etype, filetype, contig;                 /* derrived data types for IO             */
   MPI_Offset disp = offset;                             /* the initial displacement of            */
 
   // this needs to be added to the displacement so each processor starts reading from
@@ -176,6 +181,7 @@ void filewrite (char *in_file, int iteration, int offset, int total_iterations) 
   MPI_File_set_view(fh, disp, etype, filetype, "native", MPI_INFO_NULL);
   MPI_File_write_all(fh, temp, local_width*local_height, MPI_CHAR, MPI_STATUS_IGNORE);
   MPI_File_close(&fh);
+  MPI_Type_free(&filetype);
 }
 // -----------------------------------------------------------------
 
@@ -221,13 +227,6 @@ void measure (int iteration, double mu) {
 // -----------------------------------------------------------------
 // swaps ghost rows
 void summonspectre(MPI_Request* send, MPI_Request* recv) {
-  MPI_Datatype col;                                     /* makes col data type                    */
-  MPI_Type_vector(field_height, 1, field_width, MPI_INT, &col);
-  MPI_Type_commit(&col);
-
-  MPI_Datatype row;                                     /* makes row data type                    */
-  MPI_Type_vector(field_width, 1, 1, MPI_INT, &row);
-  MPI_Type_commit(&row);
 
   /* POINTER LOCATIONS *
    *                   *
@@ -308,9 +307,9 @@ void update (const double *p_up, const double *p_dn, const double *p_no) {
   int seed = 1;
   double ran; 
   for (i = 0; i < local_height*local_width; i++) {    /* loops through the local data           */
-    ran = ran3(&seed);
+    ran = ran3();
     x = (int)(ran*(double)local_width);
-    ran = ran3(&seed);
+    ran = ran3();
     y = (int)(ran*(double)local_height);
 
     yb = y + 1;                                       /* shifts needed becuase the board        */
@@ -321,7 +320,7 @@ void update (const double *p_up, const double *p_dn, const double *p_no) {
     neighbor += field[(yb)*field_width+xb-1];         /* left                                   */
     neighbor += field[(yb)*field_width+xb+1];         /* right                                  */
 
-    ran = ran3(&seed);
+    ran = ran3();
 
     if ((0 <= ran) && (ran < p_up[neighbor+4])) {field[yb*field_width+xb] = 1;}
     else if ((p_up[neighbor+4] <= ran) && (ran < p_dn[neighbor+4]+p_up[neighbor+4])) {field[yb*field_width+xb] = -1;}
@@ -373,6 +372,11 @@ int main (int argc, char *argv[]) {
 
   fileread(in_file, partition, &offset);                /* function call to read the file in      */
   lookup(beta, mu, p_up, p_dn, p_no);
+
+  MPI_Type_vector(field_height, 1, field_width, MPI_INT, &col);
+  MPI_Type_commit(&col);
+  MPI_Type_vector(field_width, 1, 1, MPI_INT, &row);
+  MPI_Type_commit(&row);
 
   for (i = 0; i < r_iterations; i++) {
     summonspectre(send, recv);                          /* exchanges ghost fields                 */
