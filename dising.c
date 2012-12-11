@@ -129,8 +129,8 @@ void fileread (char *filename, char *partition, int *offset) {
       }
     }
   }
-  MPI_File_close(&fh);
   MPI_Type_free(&filetype);
+  MPI_File_close(&fh);
 }
 // -----------------------------------------------------------------
 
@@ -165,7 +165,6 @@ void filewrite (char *in_file, int iteration, int offset, int total_iterations) 
   }
 
   MPI_Aint extent;                                      /* declares the extent                    */
-  //MPI_Datatype etype, filetype, contig;                 /* derrived data types for IO             */
   MPI_Offset disp = offset;                             /* the initial displacement of            */
 
   // this needs to be added to the displacement so each processor starts reading from
@@ -375,6 +374,7 @@ int main (int argc, char *argv[]) {
 
   MPI_Type_vector(field_height, 1, field_width, MPI_INT, &col);
   MPI_Type_commit(&col);
+
   MPI_Type_vector(field_width, 1, 1, MPI_INT, &row);
   MPI_Type_commit(&row);
 
