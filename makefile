@@ -51,7 +51,7 @@ LDFLAGS= -shared-intel
 # C and Object Files
 #
 C_FILES = dising.c
-O_FILES = dising.c
+O_FILES = dising.o
 
 #
 # Main Targets
