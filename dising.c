@@ -337,6 +337,7 @@ int main (int argc, char *argv[]) {
   int r_iterations, m_interval, w_interval, offset, i;
   double beta, mu;
   double p_up[9], p_dn[9], p_no[9];
+  double start, finish, loc_elapsed, elapsed;
   MPI_Request send[4], recv[4];
   int seed = -100-my_rank;
   ran3(&seed);
@@ -378,6 +379,8 @@ int main (int argc, char *argv[]) {
   MPI_Type_vector(field_width, 1, 1, MPI_INT, &row);
   MPI_Type_commit(&row);
 
+  MPI_Barrier(MPI_COMM_WORLD);
+  start = MPI_Wtime();
   for (i = 0; i < r_iterations; i++) {
     MPI_Barrier(MPI_COMM_WORLD);
     summonspectre(send, recv);                          /* exchanges ghost fields                 */
@@ -397,6 +400,10 @@ int main (int argc, char *argv[]) {
     update(p_up, p_dn, p_no);                           /* updates the spins                      */
     MPI_Waitall(4, send, MPI_STATUS_IGNORE);            /* waits on receives                      */
   }
+  finish = MPI_Wtime();
+  loc_elapsed = finish-start;
+  MPI_Reduce(&loc_elapsed, &elapsed, 1, MPI_DOUBLE, MPI_MAX, 0, MPI_COMM_WORLD);
+  if (my_rank == 0) printf("Elapsed time = %e\n", elapsed);
   cleanup("Run complete!");                    /* closes the program                     */
   return 0;
 }
