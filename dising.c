@@ -123,9 +123,6 @@ void fileread (char *filename, char *partition, int *offset) {
       else {
         b = (int)temp[x-1+(y-1)*local_width];           /* finds data from read                   */
         field[ll] = b - 2;
-        /*b = (b==0)?1:0;                                 [> black = bugs; other = no bug           <]*/
-        /*field_a[ll] = b;*/
-        /*field_b[ll] = b;*/
       }
     }
   }
@@ -139,7 +136,7 @@ void fileread (char *filename, char *partition, int *offset) {
 // writes the game board out to file
 void filewrite (char *in_file, int iteration, int offset, int total_iterations) {
   char filename[1000];
-  sprintf(filename, "%0*d_", (int)log10((double) total_iterations)+1, iteration); 
+  sprintf(filename, "Configs/%0*d_", (int)log10((double) total_iterations)+1, iteration); 
   strcat(filename, in_file);
 
   MPI_File fh;                                          /* sets up MPI input                      */
@@ -179,8 +176,8 @@ void filewrite (char *in_file, int iteration, int offset, int total_iterations) 
   // writes the file
   MPI_File_set_view(fh, disp, etype, filetype, "native", MPI_INFO_NULL);
   MPI_File_write_all(fh, temp, local_width*local_height, MPI_CHAR, MPI_STATUS_IGNORE);
-  MPI_File_close(&fh);
   MPI_Type_free(&filetype);
+  MPI_File_close(&fh);
 }
 // -----------------------------------------------------------------
 
